@@ -30,8 +30,8 @@ impl<'a> Lexer<'a> {
         };
         Self {
             input,
-            current_char,
             chars,
+            current_char,
             line,
             loc,
             tokens
