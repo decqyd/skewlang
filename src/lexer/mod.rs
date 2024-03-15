@@ -5,7 +5,6 @@ use crate::result::{error::{SkewErrorType, SkewResult, ReturnType}, result_type:
 
 pub mod tokens;
 
-
 #[derive(Clone)]
 pub struct Lexer <'a>{
     input: &'a str,
@@ -65,6 +64,16 @@ impl<'a> Lexer<'a> {
                   self.line += 1;
                 },
                 '\r' => (),
+                '/' if self.check_next('/') => {
+                    //let next = self.consume();
+                    //let mut comment = String::new();
+                    while self.peek().unwrap_or(&'\0') != &'\n' {
+                        //comment.push(self.consume().unwrap_or('\0'));
+                        self.consume();
+                        self.loc += 1
+                    }
+                    //self.make_token(TokenKind::Comment, self.char_concat(char, next) );
+                }
                 _ => {
                     if char.is_ascii_alphanumeric() {
                         let mut identifier = String::from(char);
@@ -109,6 +118,10 @@ impl<'a> Lexer<'a> {
 
     fn consume(&mut self) -> Option<char> {
         self.chars.next()
+    }
+
+    fn char_concat(&self, c1: char, c2: Option<char>) -> String {
+        String::from(c1) + &String::from(c2.unwrap())
     }
 
     fn make_token(
