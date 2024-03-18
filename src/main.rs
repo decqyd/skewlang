@@ -7,6 +7,7 @@ use anyhow::Result;
 
 mod lexer;
 mod result;
+mod ast;
 
 use lexer::Lexer;
 use crate::result::error::SkewResult;

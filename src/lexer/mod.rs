@@ -46,6 +46,7 @@ impl<'a> Lexer<'a> {
             match char {
               '+' => self.make_token(TokenKind::Plus, char.to_string()),
               '-' => self.make_token(TokenKind::Minus, char.to_string()),
+              '*' => self.make_token(TokenKind::Multiply, char.to_string()),
               '=' => {
                 if self.check_next('=') {
                     let next = self.consume();
@@ -56,7 +57,20 @@ impl<'a> Lexer<'a> {
               },
                 ';' => {
                     self.make_token(TokenKind::SemiColon, char.to_string());
-                }
+                },
+                '(' => {
+                    self.make_token(TokenKind::BracketOpen, char.to_string());
+                },
+                ')' => {
+                    self.make_token(TokenKind::BracketClose, char.to_string());
+                },
+                '{' => {
+                    self.make_token(TokenKind::SquirlyOpen, char.to_string());
+                },
+                '}' => {
+                    self.make_token(TokenKind::SquirlyClose, char.to_string())
+                },
+
                 // extra
                 ' ' => (),
                 '\n' => {
@@ -64,13 +78,17 @@ impl<'a> Lexer<'a> {
                   self.line += 1;
                 },
                 '\r' => (),
-                '/' if self.check_next('/') => {
+                '/'  => {
                     //let next = self.consume();
                     //let mut comment = String::new();
-                    while self.peek().unwrap_or(&'\0') != &'\n' {
-                        //comment.push(self.consume().unwrap_or('\0'));
-                        self.consume();
-                        self.loc += 1
+                    if self.check_next('/') {
+                        while self.peek().unwrap_or(&'\0') != &'\n' {
+                            //comment.push(self.consume().unwrap_or('\0'));
+                            self.consume();
+                            self.loc += 1
+                       }
+                    } else {
+                        self.make_token(TokenKind::Divide, char.to_string());
                     }
                     //self.make_token(TokenKind::Comment, self.char_concat(char, next) );
                 }
@@ -83,10 +101,12 @@ impl<'a> Lexer<'a> {
                         }
                         match identifier.as_str() {
                             "let" => self.make_token(TokenKind::Let, identifier),
+                            "fn" => self.make_token(TokenKind::FunctionDecl, identifier),
                             _ => {
-                                if identifier.parse::<i32>().is_ok() {
+                                if identifier.parse::<i32>().is_ok() || identifier.parse::<f32>().is_ok() {
                                     self.make_token(TokenKind::Number, identifier)
-                                } else {
+                                } 
+                                else {
                                     self.make_token(TokenKind::Identifier, identifier)
                                 }
                             }

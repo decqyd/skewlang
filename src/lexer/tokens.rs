@@ -2,14 +2,26 @@ use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenKind {
+    // maths
     Plus,
     Minus,
+    Multiply,
+    Divide,
+    Number,
+
+    // symbols
     Assignment,
     Equals,
+    SemiColon,
+    BracketOpen,
+    BracketClose,
+    SquirlyOpen,
+    SquirlyClose,
+    
+    // other??
     Identifier,
     Let,
-    SemiColon,
-    Number,
+    FunctionDecl,
 }
 
 #[derive(Debug, Clone, PartialEq)]
