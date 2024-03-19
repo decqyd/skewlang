@@ -5,6 +5,7 @@ use crate::result::{error::{SkewErrorType, SkewResult, ReturnType}, result_type:
 
 pub mod tokens;
 
+
 #[derive(Clone)]
 pub struct Lexer <'a>{
     input: &'a str,
@@ -55,21 +56,11 @@ impl<'a> Lexer<'a> {
                     self.make_token(TokenKind::Assignment, char.to_string());
                 }
               },
-                ';' => {
-                    self.make_token(TokenKind::SemiColon, char.to_string());
-                },
-                '(' => {
-                    self.make_token(TokenKind::BracketOpen, char.to_string());
-                },
-                ')' => {
-                    self.make_token(TokenKind::BracketClose, char.to_string());
-                },
-                '{' => {
-                    self.make_token(TokenKind::SquirlyOpen, char.to_string());
-                },
-                '}' => {
-                    self.make_token(TokenKind::SquirlyClose, char.to_string())
-                },
+                ';' => self.make_token(TokenKind::SemiColon, char.to_string()),
+                '(' => self.make_token(TokenKind::BracketOpen, char.to_string()),
+                ')' => self.make_token(TokenKind::BracketClose, char.to_string()),
+                '{' => self.make_token(TokenKind::SquirlyOpen, char.to_string()),
+                '}' => self.make_token(TokenKind::SquirlyClose, char.to_string()),
 
                 // extra
                 ' ' => (),
@@ -91,11 +82,11 @@ impl<'a> Lexer<'a> {
                         self.make_token(TokenKind::Divide, char.to_string());
                     }
                     //self.make_token(TokenKind::Comment, self.char_concat(char, next) );
-                }
+                },
                 _ => {
-                    if char.is_ascii_alphanumeric() {
+                    /*if char.is_ascii_alphanumeric() {
                         let mut identifier = String::from(char);
-                        while self.peek().unwrap_or(&'\0').is_ascii_alphanumeric() {
+                        while self.peek().unwrap_or(&'\0').is_ascii_alphanumeric() || self.peek().unwrap_or(&'\0') == &'.' {
                             identifier.push(self.consume().unwrap_or('\0'));
                             self.loc += 1
                         }
@@ -103,22 +94,66 @@ impl<'a> Lexer<'a> {
                             "let" => self.make_token(TokenKind::Let, identifier),
                             "fn" => self.make_token(TokenKind::FunctionDecl, identifier),
                             _ => {
-                                if identifier.parse::<i32>().is_ok() || identifier.parse::<f32>().is_ok() {
+                                if identifier.parse::<i32>().is_ok()  {
                                     self.make_token(TokenKind::Number, identifier)
-                                } 
-                                else {
+                                }  else if identifier.parse::<f32>().is_ok() {
+                                    self.make_token(TokenKind::Float, identifier)
+                                } else {
                                     self.make_token(TokenKind::Identifier, identifier)
                                 }
                             }
                         }
                     } else {
                           return self.return_as(ResultType::FAILURE, Some(SkewErrorType::UnexpectedToken))
+                    }*/
+                    if char.is_ascii_alphabetic() {
+                        self.parse_identifier(char);
+                    } else if char.is_ascii_digit() {
+                        match self.parse_number(char) {
+                            Err(e) => return self.return_as(ResultType::FAILURE, Some(SkewErrorType::TypeError), Some(e)),
+                            _ => (),
+                        }
+                    } else {
+                        return self.return_as(ResultType::FAILURE, Some(SkewErrorType::UnexpectedToken), Some(char.to_string()))
                     }
+
                 }
             };
         };
-        self.return_as(ResultType::SUCCESS, None)
+
+        self.return_as(ResultType::SUCCESS, None, None)
     }
+
+    fn parse_identifier(&mut self, input: char) -> ResultType {
+        let mut identifier = String::from(input);
+        while !self.peek().unwrap_or(&'\0').is_ascii_whitespace() && self.peek().is_some()  {
+                identifier.push(self.consume().unwrap_or('\0'));
+                println!("{identifier}");
+        }
+        match identifier.as_str() {
+            "let" => self.make_token(TokenKind::Let, identifier),
+            "fn" => self.make_token(TokenKind::FunctionDecl, identifier),
+            _ => self.make_token(TokenKind::Identifier, identifier)
+        } 
+        ResultType::SUCCESS
+    }
+
+    fn parse_number(&mut self, input: char) -> Result<(), String> {
+        let mut number = String::from(input);
+        while !self.peek().unwrap_or(&'\0').is_ascii_whitespace() && self.peek().is_some()  {
+            number.push(self.consume().unwrap_or('\0'));
+        }
+        println!("{number}");
+        if number.parse::<i64>().is_ok() {   
+            self.make_token(TokenKind::Number, number);
+        } else if number.parse::<f64>().is_ok() {
+            self.make_token(TokenKind::Float, number);
+        } else {
+            return Err(number) 
+        }
+        Ok(())
+    }
+
 
     fn next_str(&mut self) -> String {
         self.consume().unwrap().to_string()
@@ -137,6 +172,7 @@ impl<'a> Lexer<'a> {
     }
 
     fn consume(&mut self) -> Option<char> {
+        self.loc += 1;
         self.chars.next()
     }
 
@@ -155,7 +191,7 @@ impl<'a> Lexer<'a> {
         });
     }
 
-    fn return_as(&self, result_type: ResultType, error_type: Option<SkewErrorType>) -> SkewResult {
+    fn return_as(&self, result_type: ResultType, error_type: Option<SkewErrorType>, cause: Option<String>) -> SkewResult {
         match result_type {
             ResultType::SUCCESS => SkewResult {
                 error_type: None,
@@ -168,10 +204,9 @@ impl<'a> Lexer<'a> {
                     error_type,
                     line: self.line,
                     loc: self.loc,
-                    data: ReturnType::Char(self.current_char.expect("no character"))
+                    data: ReturnType::String(cause.expect("no cause"))
                 }
             },
         }
     }
 }
-

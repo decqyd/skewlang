@@ -1,6 +1,7 @@
 #[derive(Debug)]
 pub enum SkewErrorType {
-    UnexpectedToken
+    UnexpectedToken,
+    TypeError
 }
 
 #[derive(Debug)]
@@ -14,6 +15,6 @@ pub struct SkewResult {
 
 #[derive(Debug)]
 pub enum ReturnType {
-    Char(char),
+    String(String),
     Vec(crate::lexer::tokens::TokenList)
 }

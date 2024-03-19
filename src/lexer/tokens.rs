@@ -7,7 +7,10 @@ pub enum TokenKind {
     Minus,
     Multiply,
     Divide,
+    
+    // types
     Number,
+    Float,
 
     // symbols
     Assignment,

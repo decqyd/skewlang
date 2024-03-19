@@ -9,9 +9,9 @@ pub mod result_type;
 pub fn handle_result(filename: &str, result: SkewResult) -> TokenList {
     match result.data {
         ReturnType::Vec(t_list) => return t_list,
-        ReturnType::Char(char) => {
+        ReturnType::String(cause) => {
             if result.error_type.is_some() {
-                eprintln!("{filename}:{}:{}: error!! {:?}: {:?}", result.line, result.loc, result.error_type.unwrap(), char);
+                eprintln!("{filename}:{}:{}: error!! {:?}: {:?}", result.line, result.loc, result.error_type.unwrap(), cause);
                 exit(1);
             }
             unreachable!()
