@@ -1,5 +1,5 @@
-1
-23
-2.3
-sdsd
-2.242134.232
+1 // int
+23 // int
+2.3 // float
+sdsd // identifier
+2.242134.232 // invalid float - should error

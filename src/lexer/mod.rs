@@ -1,3 +1,4 @@
+use std::io::Write;
 use std::iter::Peekable;
 use std::str::{Chars};
 use crate::lexer::tokens::{Token, TokenKind, TokenList};
@@ -73,7 +74,7 @@ impl<'a> Lexer<'a> {
                     //let next = self.consume();
                     //let mut comment = String::new();
                     if self.check_next('/') {
-                        while self.peek().unwrap_or(&'\0') != &'\n' {
+                        while self.peek().unwrap_or(&'\0') != &'\n' && self.peek().is_some() {
                             //comment.push(self.consume().unwrap_or('\0'));
                             self.consume();
                             self.loc += 1
@@ -84,28 +85,6 @@ impl<'a> Lexer<'a> {
                     //self.make_token(TokenKind::Comment, self.char_concat(char, next) );
                 },
                 _ => {
-                    /*if char.is_ascii_alphanumeric() {
-                        let mut identifier = String::from(char);
-                        while self.peek().unwrap_or(&'\0').is_ascii_alphanumeric() || self.peek().unwrap_or(&'\0') == &'.' {
-                            identifier.push(self.consume().unwrap_or('\0'));
-                            self.loc += 1
-                        }
-                        match identifier.as_str() {
-                            "let" => self.make_token(TokenKind::Let, identifier),
-                            "fn" => self.make_token(TokenKind::FunctionDecl, identifier),
-                            _ => {
-                                if identifier.parse::<i32>().is_ok()  {
-                                    self.make_token(TokenKind::Number, identifier)
-                                }  else if identifier.parse::<f32>().is_ok() {
-                                    self.make_token(TokenKind::Float, identifier)
-                                } else {
-                                    self.make_token(TokenKind::Identifier, identifier)
-                                }
-                            }
-                        }
-                    } else {
-                          return self.return_as(ResultType::FAILURE, Some(SkewErrorType::UnexpectedToken))
-                    }*/
                     if char.is_ascii_alphabetic() {
                         self.parse_identifier(char);
                     } else if char.is_ascii_digit() {
@@ -128,7 +107,6 @@ impl<'a> Lexer<'a> {
         let mut identifier = String::from(input);
         while !self.peek().unwrap_or(&'\0').is_ascii_whitespace() && self.peek().is_some()  {
                 identifier.push(self.consume().unwrap_or('\0'));
-                println!("{identifier}");
         }
         match identifier.as_str() {
             "let" => self.make_token(TokenKind::Let, identifier),
@@ -143,7 +121,6 @@ impl<'a> Lexer<'a> {
         while !self.peek().unwrap_or(&'\0').is_ascii_whitespace() && self.peek().is_some()  {
             number.push(self.consume().unwrap_or('\0'));
         }
-        println!("{number}");
         if number.parse::<i64>().is_ok() {   
             self.make_token(TokenKind::Number, number);
         } else if number.parse::<f64>().is_ok() {
