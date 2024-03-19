@@ -11,6 +11,7 @@ pub enum TokenKind {
     // types
     Number,
     Float,
+    String,
 
     // symbols
     Assignment,
@@ -20,6 +21,8 @@ pub enum TokenKind {
     BracketClose,
     SquirlyOpen,
     SquirlyClose,
+    QuoteSingle,
+    QuoteDouble,
     
     // other??
     Identifier,

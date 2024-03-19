@@ -1,7 +1,8 @@
 #[derive(Debug)]
 pub enum SkewErrorType {
     UnexpectedToken,
-    TypeError
+    TypeError,
+    UnterminatedString
 }
 
 #[derive(Debug)]

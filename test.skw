@@ -1,5 +1,2 @@
-1 // int
-23 // int
-2.3 // float
-sdsd // identifier
-2.242134.232 // invalid float - should error
+let x = "herllo gang"1134434;
+353.3535;
