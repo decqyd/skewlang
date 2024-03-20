@@ -1,22 +1,22 @@
-use std::io::Write;
-use std::iter::Peekable;
-use std::str::{Chars};
 use crate::lexer::tokens::{Token, TokenKind, TokenList};
-use crate::result::{error::{SkewErrorType, SkewResult, ReturnType}, result_type::ResultType};
+use crate::result::{
+    error::{ReturnType, SkewErrorType, SkewResult},
+    result_type::ResultType,
+};
+use std::iter::Peekable;
+use std::str::Chars;
 
 pub mod tokens;
 
-
 #[derive(Clone)]
-pub struct Lexer <'a>{
+pub struct Lexer<'a> {
     input: &'a str,
     current_char: Option<char>,
     chars: Peekable<Chars<'a>>,
     pub line: i32,
     pub loc: i32,
-    tokens: TokenList
+    tokens: TokenList,
 }
-
 
 impl<'a> Lexer<'a> {
     // public methods
@@ -26,16 +26,14 @@ impl<'a> Lexer<'a> {
         let mut line = 1;
         let mut loc = -1;
         let list = Vec::new();
-        let tokens :TokenList = TokenList {
-            list
-        };
+        let tokens: TokenList = TokenList { list };
         Self {
             input,
             chars,
             current_char,
             line,
             loc,
-            tokens
+            tokens,
         }
     }
 
@@ -56,105 +54,116 @@ impl<'a> Lexer<'a> {
                     } else {
                         self.make_token(TokenKind::Assignment, char.to_string());
                     }
-                },
+                }
                 ';' => self.make_token(TokenKind::SemiColon, char.to_string()),
                 '(' => self.make_token(TokenKind::BracketOpen, char.to_string()),
                 ')' => self.make_token(TokenKind::BracketClose, char.to_string()),
                 '{' => self.make_token(TokenKind::SquirlyOpen, char.to_string()),
                 '}' => self.make_token(TokenKind::SquirlyClose, char.to_string()),
                 '\'' => self.make_token(TokenKind::QuoteSingle, char.to_string()),
-                '"' => { 
-                    match self.parse_string(char) {
-                        Err(e) => return self.return_as(ResultType::FAILURE, Some(SkewErrorType::UnterminatedString), Some(e)),
-                        _ => ()
+                '"' => match self.handle_string(char) {
+                    Err(e) => {
+                        return self.return_as(
+                            ResultType::FAILURE,
+                            Some(SkewErrorType::UnterminatedString),
+                            Some(e),
+                        )
                     }
+                    _ => (),
                 },
 
                 // extra
                 ' ' | '\r' => (),
                 '\n' => {
-                  self.loc = 0;
-                  self.line += 1;
-                },
-                '/'  => {
+                    self.loc = 0;
+                    self.line += 1;
+                }
+                '/' => {
                     if self.check_next('/') {
                         while self.peek().unwrap_or(&'\0') != &'\n' && self.peek().is_some() {
                             self.consume();
                             self.loc += 1
-                       }
+                        }
                     } else {
                         self.make_token(TokenKind::Divide, char.to_string());
                     }
-                },
+                }
                 _ => {
                     if char.is_ascii_alphabetic() {
-                        self.parse_identifier(char);
+                        self.handle_identifier(char);
                     } else if char.is_ascii_digit() {
-                        match self.parse_number(char) {
-                            Err(e) => return self.return_as(ResultType::FAILURE, Some(SkewErrorType::TypeError), Some(e)),
+                        match self.handle_number(char) {
+                            Err(e) => {
+                                return self.return_as(
+                                    ResultType::FAILURE,
+                                    Some(SkewErrorType::TypeError),
+                                    Some(e),
+                                )
+                            }
                             _ => (),
                         }
                     } else {
-                        return self.return_as(ResultType::FAILURE, Some(SkewErrorType::UnexpectedToken), Some(char.to_string()))
+                        return self.return_as(
+                            ResultType::FAILURE,
+                            Some(SkewErrorType::UnexpectedToken),
+                            Some(char.to_string()),
+                        );
                     }
-
                 }
             };
-        };
+        }
 
         self.return_as(ResultType::SUCCESS, None, None)
     }
 
-    fn parse_identifier(&mut self, input: char) -> ResultType {
+    fn handle_identifier(&mut self, input: char) -> ResultType {
         let mut identifier = String::from(input);
         while !self.peek().unwrap_or(&'\0').is_ascii_whitespace()
-            && self.peek().is_some() 
-            && self.peek().unwrap_or(&'\0').is_alphabetic() 
-            || self.peek().unwrap_or(&'\0') == &'_' {
-                identifier.push(self.consume().unwrap_or('\0'));
+            && self.peek().is_some()
+            && self.peek().unwrap_or(&'\0').is_alphabetic()
+            || self.peek().unwrap_or(&'\0') == &'_'
+        {
+            identifier.push(self.consume().unwrap_or('\0'));
         }
         match identifier.as_str() {
             "let" => self.make_token(TokenKind::Let, identifier),
             "fn" => self.make_token(TokenKind::FunctionDecl, identifier),
-            _ => self.make_token(TokenKind::Identifier, identifier)
-        } 
+            "if" => self.make_token(TokenKind::If, identifier),
+            "else" => self.make_token(TokenKind::Else, identifier),
+            _ => self.make_token(TokenKind::Identifier, identifier),
+        }
         ResultType::SUCCESS
     }
 
-    fn parse_number(&mut self, input: char) -> Result<(), String> {
+    fn handle_number(&mut self, input: char) -> Result<(), String> {
         let mut number = String::from(input);
-        while !self.peek().unwrap_or(&'\0').is_ascii_whitespace() && self.peek().is_some()  {
+        while !self.peek().unwrap_or(&'\0').is_ascii_whitespace()
+            && self.peek().is_some()
+            && self.peek().unwrap_or(&'\0') != &';'
+        {
             number.push(self.consume().unwrap_or('\0'));
         }
-        if number.contains(';') {
-            number = number.replace(";", "");
-        }
-        if number.parse::<i64>().is_ok() {   
+        if number.parse::<i64>().is_ok() {
             self.make_token(TokenKind::Number, number);
         } else if number.parse::<f64>().is_ok() {
             self.make_token(TokenKind::Float, number);
         } else {
-            return Err(number) 
+            return Err(number);
         }
         Ok(())
     }
 
-    fn parse_string(&mut self, input: char) -> Result<(), String> {
+    fn handle_string(&mut self, input: char) -> Result<(), String> {
         let mut value = String::from(input);
         while self.peek().unwrap_or(&'\0') != &'"' && self.peek().is_some() {
             value.push(self.consume().unwrap_or('\0'));
         }
         value.push(self.consume().unwrap_or('\0')); // for the last set of double quotes
         if value.contains('\0') {
-            return Err(value)
-        } else {
-            self.make_token(TokenKind::String, value)
-        } 
+            return Err(value);
+        }
+        self.make_token(TokenKind::String, value);
         Ok(())
-    }
-
-    fn next_str(&mut self) -> String {
-        self.consume().unwrap().to_string()
     }
 
     fn peek(&mut self) -> Option<&char> {
@@ -163,10 +172,6 @@ impl<'a> Lexer<'a> {
 
     fn check_next(&mut self, char: char) -> bool {
         self.peek().is_some() && self.peek().unwrap().to_owned() == char
-    }
-
-    fn check_current(&mut self, char: char) -> bool {
-        self.current_char.unwrap() == char
     }
 
     fn consume(&mut self) -> Option<char> {
@@ -178,32 +183,28 @@ impl<'a> Lexer<'a> {
         String::from(c1) + &String::from(c2.unwrap())
     }
 
-    fn make_token(
-        &mut self,
-        token: TokenKind,
-        value: String
-    ) {
-        self.tokens.list.push(Token {
-            kind: token,
-            value
-        });
+    fn make_token(&mut self, token: TokenKind, value: String) {
+        self.tokens.list.push(Token { kind: token, value });
     }
 
-    fn return_as(&self, result_type: ResultType, error_type: Option<SkewErrorType>, cause: Option<String>) -> SkewResult {
+    fn return_as(
+        &self,
+        result_type: ResultType,
+        error_type: Option<SkewErrorType>,
+        cause: Option<String>,
+    ) -> SkewResult {
         match result_type {
             ResultType::SUCCESS => SkewResult {
                 error_type: None,
                 line: self.line,
                 loc: self.loc,
-                data: ReturnType::Vec(self.clone().tokens)
+                data: ReturnType::Vec(self.clone().tokens),
             },
-            ResultType::FAILURE => {
-                SkewResult {
-                    error_type,
-                    line: self.line,
-                    loc: self.loc,
-                    data: ReturnType::String(cause.expect("no cause"))
-                }
+            ResultType::FAILURE => SkewResult {
+                error_type,
+                line: self.line,
+                loc: self.loc,
+                data: ReturnType::String(cause.expect("no cause")),
             },
         }
     }

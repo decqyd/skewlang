@@ -7,7 +7,7 @@ pub enum TokenKind {
     Minus,
     Multiply,
     Divide,
-    
+
     // types
     Number,
     Float,
@@ -23,11 +23,13 @@ pub enum TokenKind {
     SquirlyClose,
     QuoteSingle,
     QuoteDouble,
-    
-    // other??
+
+    // words
     Identifier,
     Let,
     FunctionDecl,
+    If,
+    Else,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -38,7 +40,7 @@ pub struct Token {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct TokenList {
-    pub list: Vec<Token>
+    pub list: Vec<Token>,
 }
 
 impl TokenList {
@@ -55,6 +57,6 @@ impl Display for Token {
 
 impl Display for TokenList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:#?}", self.list.iter().map(|tkn| &tkn.value))  
+        write!(f, "{:#?}", self.list)
     }
 }

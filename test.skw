@@ -1,2 +1,4 @@
-let x = "herllo gang"1134434;
-353.3535;
+let x = 4;
+if x = 4 {
+  print("hello world")
+}
