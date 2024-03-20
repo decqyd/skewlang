@@ -3,13 +3,11 @@ extern crate core;
 use anyhow::Result;
 use std::fs::File;
 use std::io::Read;
-use std::rc::Rc;
 
 mod ast;
 mod lexer;
 mod result;
 
-use crate::result::error::SkewResult;
 use lexer::Lexer;
 
 fn main() -> Result<()> {

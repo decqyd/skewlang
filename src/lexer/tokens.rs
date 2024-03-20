@@ -15,7 +15,6 @@ pub enum TokenKind {
 
     // symbols
     Assignment,
-    Equals,
     SemiColon,
     BracketOpen,
     BracketClose,
@@ -23,13 +22,30 @@ pub enum TokenKind {
     SquirlyClose,
     QuoteSingle,
     QuoteDouble,
+    Bang,
 
     // words
     Identifier,
     Let,
     FunctionDecl,
+    Import,
+
+    // conditional
     If,
     Else,
+
+    // comparison
+    And,
+    Or,
+    Equals,
+    Greater,
+    GreaterEqual,
+    Lower,
+    LowerEqual,
+
+    // loops
+    While,
+    For,
 }
 
 #[derive(Debug, Clone, PartialEq)]

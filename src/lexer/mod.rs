@@ -1,3 +1,4 @@
+#![allow(dead_code, unused_mut)]
 use crate::lexer::tokens::{Token, TokenKind, TokenList};
 use crate::result::{
     error::{ReturnType, SkewErrorType, SkewResult},
@@ -69,7 +70,7 @@ impl<'a> Lexer<'a> {
                             Some(e),
                         )
                     }
-                    _ => (),
+                    _ => continue,
                 },
 
                 // extra
@@ -100,7 +101,7 @@ impl<'a> Lexer<'a> {
                                     Some(e),
                                 )
                             }
-                            _ => (),
+                            _ => continue,
                         }
                     } else {
                         return self.return_as(
