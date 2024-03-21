@@ -61,6 +61,7 @@ impl<'a> Lexer<'a> {
                 ')' => self.make_token(TokenKind::BracketClose, char.to_string()),
                 '{' => self.make_token(TokenKind::SquirlyOpen, char.to_string()),
                 '}' => self.make_token(TokenKind::SquirlyClose, char.to_string()),
+                '.' => self.make_token(TokenKind::Dot, char.to_string()),
                 '\'' => self.make_token(TokenKind::QuoteSingle, char.to_string()),
                 '"' => match self.handle_string(char) {
                     Err(e) => {

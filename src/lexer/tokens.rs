@@ -23,6 +23,7 @@ pub enum TokenKind {
     QuoteSingle,
     QuoteDouble,
     Bang,
+    Dot,
 
     // words
     Identifier,

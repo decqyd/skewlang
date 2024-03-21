@@ -1,7 +1,8 @@
 print("hello world");
-
+.. .. .. . . 
 
 12313213
 123
 22
 
+person.hello()
