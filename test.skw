@@ -1,8 +1,22 @@
-print("hello world");
-.. .. .. . . 
+puts "this is the thhany {variable}";
 
-12313213
-123
-22
 
-person.hello()
+fn doFunction arg1 arg2 as
+  // function body here
+end
+
+
+puts + 2 4;
+
+if < 2 4 do
+  // if body here
+else if
+  // else if body here
+else 
+  // else body here
+
+let var1 = 0;
+puts var1;
+let mut var2 = 0;
+var2 += 1;
+puts var2;

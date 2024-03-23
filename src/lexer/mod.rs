@@ -48,14 +48,13 @@ impl<'a> Lexer<'a> {
                 '+' => self.make_token(TokenKind::Plus, char.to_string()),
                 '-' => self.make_token(TokenKind::Minus, char.to_string()),
                 '*' => self.make_token(TokenKind::Multiply, char.to_string()),
-                '=' => {
-                    if self.check_next('=') {
+                '=' => match self.check_next('=') {
+                    true => {
                         let next = self.consume();
                         self.make_token(TokenKind::Equals, self.char_concat(char, next));
-                    } else {
-                        self.make_token(TokenKind::Assignment, char.to_string());
                     }
-                }
+                    false => self.make_token(TokenKind::Assignment, char.to_string()),
+                },
                 ';' => self.make_token(TokenKind::SemiColon, char.to_string()),
                 '(' => self.make_token(TokenKind::BracketOpen, char.to_string()),
                 ')' => self.make_token(TokenKind::BracketClose, char.to_string()),
@@ -72,6 +71,20 @@ impl<'a> Lexer<'a> {
                         )
                     }
                     _ => continue,
+                },
+                '>' => match self.check_next('=') {
+                    true => {
+                        let next = self.consume();
+                        self.make_token(TokenKind::GreaterEqual, self.char_concat(char, next))
+                    }
+                    false => self.make_token(TokenKind::Greater, char.to_string()),
+                },
+                '<' => match self.check_next('=') {
+                    true => {
+                        let next = self.consume();
+                        self.make_token(TokenKind::LowerEqual, self.char_concat(char, next))
+                    }
+                    false => self.make_token(TokenKind::Lower, char.to_string()),
                 },
 
                 // extra
@@ -122,7 +135,7 @@ impl<'a> Lexer<'a> {
         let mut identifier = String::from(input);
         while !self.peek().unwrap_or(&'\0').is_ascii_whitespace()
             && self.peek().is_some()
-            && self.peek().unwrap_or(&'\0').is_alphabetic()
+            && self.peek().unwrap_or(&'\0').is_alphanumeric()
             || self.peek().unwrap_or(&'\0') == &'_'
         {
             identifier.push(self.consume().unwrap_or('\0'));
