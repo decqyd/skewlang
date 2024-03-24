@@ -6,9 +6,11 @@ use std::io::Read;
 
 mod ast;
 mod lexer;
+mod parser;
 mod result;
 
 use lexer::Lexer;
+use parser::Parser;
 
 fn main() -> Result<()> {
     let filename: &str = "test.skw";
@@ -18,8 +20,8 @@ fn main() -> Result<()> {
     let lexer = Lexer::new(contents.as_str());
     let result = lexer.lex();
     let tokens = result::handle_result(Some(filename), result);
-    println!("{tokens}");
-
+    let parser = Parser::new(tokens);
+    parser.parse();
     Ok(())
 }
 
