@@ -1,1 +1,6 @@
-puts "hello world";
+// puts "hello world";
+
+
+fn function arg1 do
+    puts 1 + 2;
+end

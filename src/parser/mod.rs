@@ -2,22 +2,24 @@ use crate::lexer::tokens::{Token, TokenList};
 use std::iter::Peekable;
 
 pub struct Parser {
-    token_list: Peekable<Vec<Token>>,
+    token_list: Vec<Token>,
     current_token: Option<Token>,
 }
 
 impl Parser {
-    pub fn new(tokens: TokenList) -> Self {
+    pub fn new(tokens: Vec<Token>) -> Self {
         Parser {
             token_list: tokens,
             current_token: None,
         }
     }
     pub fn parse(&self) {
-        println!("{}", self.token_list);
+        let mut tokens = self.token_list.iter().peekable();
+        while let Some(token) = tokens.next() {
+            println!("tokens: {tokens:?}");
+            println!("{}: {}", token.kind, token.value);
+        }
     }
+    
 
-    fn get_current_token(&self) -> Option<Token> {
-        self.current_token
-    }
 }

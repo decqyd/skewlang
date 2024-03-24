@@ -58,8 +58,8 @@ impl<'a> Lexer<'a> {
                 ';' => self.make_token(TokenKind::SemiColon, char.to_string()),
                 '(' => self.make_token(TokenKind::BracketOpen, char.to_string()),
                 ')' => self.make_token(TokenKind::BracketClose, char.to_string()),
-                '{' => self.make_token(TokenKind::SquirlyOpen, char.to_string()),
-                '}' => self.make_token(TokenKind::SquirlyClose, char.to_string()),
+                //'{' => self.make_token(TokenKind::SquirlyOpen, char.to_string()),
+                //'}' => self.make_token(TokenKind::SquirlyClose, char.to_string()),
                 '.' => self.make_token(TokenKind::Dot, char.to_string()),
                 '\'' => self.make_token(TokenKind::QuoteSingle, char.to_string()),
                 '"' => match self.handle_string(char) {
@@ -142,9 +142,14 @@ impl<'a> Lexer<'a> {
         }
         match identifier.as_str() {
             "let" => self.make_token(TokenKind::Let, identifier),
-            "fn" => self.make_token(TokenKind::FunctionDecl, identifier),
+            "fn" => self.make_token(TokenKind::Fn, identifier),
             "if" => self.make_token(TokenKind::If, identifier),
             "else" => self.make_token(TokenKind::Else, identifier),
+            "while" => self.make_token(TokenKind::While, identifier),
+            "for" => self.make_token(TokenKind::For, identifier),
+            "ret" => self.make_token(TokenKind::Return, identifier),
+            "do" => self.make_token(TokenKind::Do, identifier),
+            "end" => self.make_token(TokenKind::End, identifier),
             _ => self.make_token(TokenKind::Identifier, identifier),
         }
         ResultType::SUCCESS

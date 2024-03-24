@@ -18,8 +18,8 @@ pub enum TokenKind {
     SemiColon,
     BracketOpen,
     BracketClose,
-    SquirlyOpen,
-    SquirlyClose,
+    //SquirlyOpen,
+    //SquirlyClose,
     QuoteSingle,
     QuoteDouble,
     Bang,
@@ -28,9 +28,11 @@ pub enum TokenKind {
     // words
     Identifier,
     Let,
-    FunctionDecl,
+    Return,
+    Fn,
     Import,
-
+    Do,
+    End,
     // conditional
     If,
     Else,
@@ -75,5 +77,11 @@ impl Display for Token {
 impl Display for TokenList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:#?}", self.list)
+    }
+}
+
+impl Display for TokenKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
     }
 }

@@ -1,0 +1,12 @@
+program => statement*
+statement => varDeclaration | fnDeclaration | print | if | for | while | return
+varDeclaration => "let [identifier] = [expression];"
+fnDeclaration => "fn identifier [identifier]*? do [block] end"
+print => "puts [string | expression];"
+if => "if [expression] do [block] (else [block])? end"
+for => "for [identifier] in [iterable] do [block] end"
+while => "while [expression] do [block] end"
+return => "return [expression];"
+block => statement
+
+ 

@@ -20,7 +20,7 @@ fn main() -> Result<()> {
     let lexer = Lexer::new(contents.as_str());
     let result = lexer.lex();
     let tokens = result::handle_result(Some(filename), result);
-    let parser = Parser::new(tokens);
+    let parser = Parser::new(tokens.list);
     parser.parse();
     Ok(())
 }
