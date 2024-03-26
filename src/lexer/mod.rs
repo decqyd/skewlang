@@ -1,13 +1,12 @@
 #![allow(dead_code, unused_mut)]
 use crate::lexer::tokens::{Token, TokenKind, TokenList};
-use crate::result::{
-    error::{ReturnType, SkewErrorType, SkewResult},
-    result_type::ResultType,
-};
+use crate::result::error::SkewError;
+use crate::result::{error::SkewErrorType, result_type::ResultType};
 use std::iter::Peekable;
 use std::str::Chars;
 
 pub mod tokens;
+use tokens::ValueToken;
 
 #[derive(Clone)]
 pub struct Lexer<'a> {
@@ -38,7 +37,7 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    pub fn lex(mut self) -> SkewResult {
+    pub fn lex(mut self) -> Result<TokenList, SkewError> {
         while let Some(char) = self.consume() {
             self.current_char = Some(char);
             self.loc += 1;
@@ -64,7 +63,7 @@ impl<'a> Lexer<'a> {
                 '\'' => self.make_token(TokenKind::QuoteSingle, char.to_string()),
                 '"' => match self.handle_string(char) {
                     Err(e) => {
-                        return self.return_as(
+                        return self.error(
                             ResultType::FAILURE,
                             Some(SkewErrorType::UnterminatedString),
                             Some(e),
@@ -109,7 +108,7 @@ impl<'a> Lexer<'a> {
                     } else if char.is_ascii_digit() {
                         match self.handle_number(char) {
                             Err(e) => {
-                                return self.return_as(
+                                return self.error(
                                     ResultType::FAILURE,
                                     Some(SkewErrorType::TypeError),
                                     Some(e),
@@ -118,7 +117,7 @@ impl<'a> Lexer<'a> {
                             _ => continue,
                         }
                     } else {
-                        return self.return_as(
+                        return self.error(
                             ResultType::FAILURE,
                             Some(SkewErrorType::UnexpectedToken),
                             Some(char.to_string()),
@@ -127,8 +126,8 @@ impl<'a> Lexer<'a> {
                 }
             };
         }
-
-        self.return_as(ResultType::SUCCESS, None, None)
+        self.make_token(TokenKind::Eof, String::new());
+        Ok(self.tokens)
     }
 
     fn handle_identifier(&mut self, input: char) -> ResultType {
@@ -150,6 +149,8 @@ impl<'a> Lexer<'a> {
             "ret" => self.make_token(TokenKind::Return, identifier),
             "do" => self.make_token(TokenKind::Do, identifier),
             "end" => self.make_token(TokenKind::End, identifier),
+            "puts" => self.make_token(TokenKind::Puts, identifier),
+            "true" | "false" => self.make_token(TokenKind::Value(ValueToken::Boolean), identifier),
             _ => self.make_token(TokenKind::Identifier, identifier),
         }
         ResultType::SUCCESS
@@ -164,9 +165,9 @@ impl<'a> Lexer<'a> {
             number.push(self.consume().unwrap_or('\0'));
         }
         if number.parse::<i64>().is_ok() {
-            self.make_token(TokenKind::Number, number);
+            self.make_token(TokenKind::Value(ValueToken::Number), number);
         } else if number.parse::<f64>().is_ok() {
-            self.make_token(TokenKind::Float, number);
+            self.make_token(TokenKind::Value(ValueToken::Float), number);
         } else {
             return Err(number);
         }
@@ -182,7 +183,7 @@ impl<'a> Lexer<'a> {
         if value.contains('\0') {
             return Err(value);
         }
-        self.make_token(TokenKind::String, value);
+        self.make_token(TokenKind::Value(ValueToken::String), value);
         Ok(())
     }
 
@@ -207,25 +208,17 @@ impl<'a> Lexer<'a> {
         self.tokens.list.push(Token { kind: token, value });
     }
 
-    fn return_as(
+    fn error(
         &self,
         result_type: ResultType,
         error_type: Option<SkewErrorType>,
         cause: Option<String>,
-    ) -> SkewResult {
-        match result_type {
-            ResultType::SUCCESS => SkewResult {
-                error_type: None,
-                line: self.line,
-                loc: self.loc,
-                data: ReturnType::Vec(self.clone().tokens),
-            },
-            ResultType::FAILURE => SkewResult {
-                error_type,
-                line: self.line,
-                loc: self.loc,
-                data: ReturnType::String(cause.expect("no cause")),
-            },
+    ) -> SkewError {
+        SkewError {
+            error_type,
+            line: self.line,
+            loc: self.loc,
+            cause: cause.expect("no cause"),
         }
     }
 }

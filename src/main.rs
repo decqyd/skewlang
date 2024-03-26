@@ -20,7 +20,7 @@ fn main() -> Result<()> {
     let lexer = Lexer::new(contents.as_str());
     let result = lexer.lex();
     let tokens = result::handle_result(Some(filename), result);
-    let parser = Parser::new(tokens.list);
+    let mut parser = Parser::new(tokens.list);
     parser.parse();
     Ok(())
 }
@@ -38,7 +38,7 @@ mod tests {
                 TokenKind::Let,
                 TokenKind::Identifier,
                 TokenKind::Assignment,
-                TokenKind::Number,
+                TokenKind::Value(ValueToken::Number),
                 TokenKind::SemiColon
             ]
         );
@@ -51,7 +51,7 @@ mod tests {
             tokens,
             TokenList {
                 list: vec![Token {
-                    kind: TokenKind::String,
+                    kind: TokenKind::Value(ValueToken::String),
                     value: "\"this is a string\"".to_string()
                 }]
             }

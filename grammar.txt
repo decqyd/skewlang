@@ -9,4 +9,14 @@ while => "while [expression] do [block] end"
 return => "return [expression];"
 block => statement
 
- 
+expression => assignment | logical
+assigment => "[identifier] = [logical]"
+logical => "[equality] ['&&' | '||'] [equality]"
+equality => "[comparison] ['!=' | '=='] [comparison]"
+comparison => "[term] ['>' | '>=' | '<' | '<='] [term]"
+term => "[factor] ['-' | '+'] [factor]"
+factor => "[range] ['/' | '*'] [factor]"
+range => "[unary]..[unary]"
+unary => "['!' | '-'] [primary] | [call]"
+call => "[primary] ([expression])*?"
+primary => "[value] | ([logical]) | [identifer]"

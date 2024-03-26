@@ -8,11 +8,6 @@ pub enum TokenKind {
     Multiply,
     Divide,
 
-    // types
-    Number,
-    Float,
-    String,
-
     // symbols
     Assignment,
     SemiColon,
@@ -33,9 +28,13 @@ pub enum TokenKind {
     Import,
     Do,
     End,
+    Puts,
+
     // conditional
     If,
     Else,
+
+    Value(ValueToken),
 
     // comparison
     And,
@@ -49,6 +48,8 @@ pub enum TokenKind {
     // loops
     While,
     For,
+
+    Eof,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -84,4 +85,13 @@ impl Display for TokenKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }
+}
+
+#[derive(PartialEq, Clone, Debug)]
+pub enum ValueToken {
+    // types
+    Number,
+    Float,
+    String,
+    Boolean,
 }
